@@ -3,7 +3,6 @@ package rest
 import (
 	"github.com/gin-gonic/gin"
 	"log"
-	"net/http"
 )
 
 const (
@@ -18,9 +17,6 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		log.Fatal(err)
 	}
 	c.Set(userCtx, id)
-	c.JSON(http.StatusOK, map[string]int64{
-		"id": getUserID(c),
-	})
 }
 
 func getUserID(c *gin.Context) int64 {
