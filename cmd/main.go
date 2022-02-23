@@ -5,14 +5,14 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"myFinanceTask/internal/core/auth"
-	"myFinanceTask/internal/db/auth/postgres"
+	"myFinanceTask/internal/db/postgres/auth"
 	"myFinanceTask/internal/handler/rest"
 )
 
 func main() {
 	db := initPostgresDB()
 
-	aRepo := postgres.NewAuthStorage(db)
+	aRepo := psqlAuth.NewAuthStorage(db)
 	aService := auth.NewAuthService(aRepo)
 	handler := rest.NewHandler(aService)
 

@@ -12,7 +12,7 @@ CREATE TABLE portfolio(
 
 CREATE TABLE symbol(
     id SERIAL PRIMARY KEY,
-    abbr VARCHAR(6),
+    abbr VARCHAR(6), -- Добавить UNIQUE !!!
     full_name VARCHAR(255)
 );
 

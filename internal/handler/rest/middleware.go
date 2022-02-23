@@ -12,6 +12,9 @@ const (
 
 func (h *Handler) userIdentity(c *gin.Context) {
 	header := c.GetHeader(authHeader)
+	if header == "" {
+		log.Fatal("empty header")
+	}
 	id, err := h.authService.ParseToken(header)
 	if err != nil {
 		log.Fatal(err)
@@ -19,7 +22,13 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	c.Set(userCtx, id)
 }
 
+func (h *Handler) isAdmin(c *gin.Context) {
+}
+
 func getUserID(c *gin.Context) int64 {
-	id, _ := c.Get(userCtx)
+	id, exists := c.Get(userCtx)
+	if !exists {
+		log.Fatal("user don't exists")
+	}
 	return id.(int64)
 }
