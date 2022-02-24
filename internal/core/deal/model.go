@@ -2,6 +2,7 @@ package deal
 
 type Portfolio struct {
 	ID      int
+	Name    string
 	UserId  int
 	Account int
 }

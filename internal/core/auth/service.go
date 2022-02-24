@@ -33,6 +33,10 @@ func (s *AuthService) generateHashPassword(password string) string {
 	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
 }
 
+func (s *AuthService) IsAdmin(id int64) bool {
+	return s.repo.IsAdmin(id)
+}
+
 //Jwt tokens
 
 type tokenClaims struct {
@@ -47,7 +51,7 @@ func (s *AuthService) GenerateToken(name, password string) (string, error) {
 		return "", err
 	}
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaims{jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(12 * time.Hour).Unix(),
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour).Unix(),
 		IssuedAt:  time.Now().Unix(),
 	},
 		user.ID,

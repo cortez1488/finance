@@ -1,0 +1,5 @@
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS isAdmin boolean DEFAULT FALSE;
+
+ALTER TABLE portfolio
+ADD COLUMN IF NOT EXISTS name varchar DEFAULT 'Моё портфолио';

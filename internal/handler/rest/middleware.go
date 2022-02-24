@@ -3,6 +3,7 @@ package rest
 import (
 	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 )
 
 const (
@@ -22,13 +23,23 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	c.Set(userCtx, id)
 }
 
-func (h *Handler) isAdmin(c *gin.Context) {
-}
-
 func getUserID(c *gin.Context) int64 {
 	id, exists := c.Get(userCtx)
 	if !exists {
 		log.Fatal("user don't exists")
 	}
 	return id.(int64)
+}
+
+func (h *Handler) isAdmin(c *gin.Context) {
+	id := getUserID(c)
+	if !h.authService.IsAdmin(id) {
+		c.JSON(http.StatusForbidden, map[string]string{
+			"error": "no access",
+		})
+	} else {
+		c.JSON(http.StatusOK, map[string]string{
+			"response": "you are admin",
+		})
+	}
 }

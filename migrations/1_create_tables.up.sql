@@ -1,22 +1,22 @@
-CREATE TABLE users(
+CREATE TABLE IF NOT EXISTS users(
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     hashPass VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE portfolio(
+CREATE TABLE IF NOT EXISTS portfolio(
   id SERIAL PRIMARY KEY,
   user_id int REFERENCES users (id) ON DELETE CASCADE,
   account bigint default 0
 );
 
-CREATE TABLE symbol(
+CREATE TABLE IF NOT EXISTS symbol(
     id SERIAL PRIMARY KEY,
     abbr VARCHAR(6), -- Добавить UNIQUE !!!
     full_name VARCHAR(255)
 );
 
-CREATE TABLE deal(
+CREATE TABLE IF NOT EXISTS deal(
     id SERIAL PRIMARY KEY,
     type VARCHAR(10) NOT NULL,
     symbol_id int REFERENCES symbol(id),
@@ -28,7 +28,7 @@ CREATE TABLE deal(
     user_id int REFERENCES users (id)
 );
 
-CREATE TABLE active_share(
+CREATE TABLE IF NOT EXISTS active_share(
     id SERIAL PRIMARY KEY,
     price DECIMAL NOT NULL ,
     number INT NOT NULL,

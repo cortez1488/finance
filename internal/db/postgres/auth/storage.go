@@ -33,3 +33,12 @@ func (r *userStorage) GetUser(username, password string) (auth.User, error) {
 	err := r.db.Get(&user, query, username, password)
 	return user, err
 }
+
+func (r *userStorage) IsAdmin(id int64) bool {
+	var isAdmin bool
+	query := fmt.Sprintf("SELECT isadmin FROM %s WHERE id = $1", "users")
+	row := r.db.QueryRow(query, id)
+	row.Scan(&isAdmin)
+
+	return isAdmin
+}
