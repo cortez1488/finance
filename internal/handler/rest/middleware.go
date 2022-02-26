@@ -37,9 +37,5 @@ func (h *Handler) isAdmin(c *gin.Context) {
 		c.JSON(http.StatusForbidden, map[string]string{
 			"error": "no access",
 		})
-	} else {
-		c.JSON(http.StatusOK, map[string]string{
-			"response": "you are admin",
-		})
 	}
 }

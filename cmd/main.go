@@ -4,7 +4,9 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"log"
+	"myFinanceTask/internal/core/admSymbol"
 	"myFinanceTask/internal/core/auth"
+	psqlAdmSymbol "myFinanceTask/internal/db/postgres/admSymbol"
 	"myFinanceTask/internal/db/postgres/auth"
 	"myFinanceTask/internal/handler/rest"
 )
@@ -12,9 +14,13 @@ import (
 func main() {
 	db := initPostgresDB()
 
-	aRepo := psqlAuth.NewAuthStorage(db)
-	aService := auth.NewAuthService(aRepo)
-	handler := rest.NewHandler(aService)
+	authRepo := psqlAuth.NewAuthStorage(db)
+	authService := auth.NewAuthService(authRepo)
+
+	admSymbolRepo := psqlAdmSymbol.NewAdmSymbolStorage(db)
+	admSymbolService := admSymbol.NewAdmSymbolService(admSymbolRepo)
+
+	handler := rest.NewHandler(authService, admSymbolService)
 
 	server := handler.InitRoutes()
 	server.Run()

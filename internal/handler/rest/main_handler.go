@@ -5,11 +5,13 @@ import (
 )
 
 type Handler struct {
-	authService UserService
+	authService      UserService
+	admSymbolService AdmSymbolService
 }
 
-func NewHandler(service UserService) *Handler {
-	return &Handler{authService: service}
+func NewHandler(userService UserService, admSymbolService AdmSymbolService) *Handler {
+	return &Handler{authService: userService,
+		admSymbolService: admSymbolService}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
@@ -21,12 +23,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	}
 	api := router.Group("/api", h.userIdentity)
 	{
-		admin := api.Group("/admin", h.userIdentity)
+		admin := api.Group("/admin", h.isAdmin)
 		{
-			admin.GET("/check", h.isAdmin)
-			admin.POST("/sbm-create/:id")
+			admin.POST("/sbm-create", h.CreateSymbol)
 			admin.POST("/sbm-set-price/:id")
-			admin.DELETE("/:id")
+			admin.DELETE("/:id", h.DeleteSymbol)
 		}
 	}
 	return router
