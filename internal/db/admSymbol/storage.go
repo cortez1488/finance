@@ -1,17 +1,20 @@
 package psqlAdmSymbol
 
 import (
+	"context"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/jmoiron/sqlx"
 	"myFinanceTask/internal/handler/rest"
 )
 
 type admSymbolStorage struct {
-	db *sqlx.DB
+	db  *sqlx.DB
+	rdb *redis.Client
 }
 
-func NewAdmSymbolStorage(db *sqlx.DB) *admSymbolStorage {
-	return &admSymbolStorage{db: db}
+func NewAdmSymbolStorage(db *sqlx.DB, rdb *redis.Client) *admSymbolStorage {
+	return &admSymbolStorage{db: db, rdb: rdb}
 }
 
 func (r *admSymbolStorage) CreateSymbol(symbol rest.AdmSymbolDTO) (int, error) {
@@ -25,9 +28,9 @@ func (r *admSymbolStorage) CreateSymbol(symbol rest.AdmSymbolDTO) (int, error) {
 	return id, nil
 }
 
-func (r *admSymbolStorage) SetPrice(price float64) error {
-	fmt.Println("set price redis logic")
-	return nil
+func (r *admSymbolStorage) SetPrice(symbol rest.AdmPriceDTO) error {
+	_, err := r.rdb.Set(context.Background(), symbol.Abbr, symbol.Price, 0).Result()
+	return err
 }
 
 func (r *admSymbolStorage) DeleteSymbol(id int) error {

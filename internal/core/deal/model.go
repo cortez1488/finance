@@ -1,12 +1,5 @@
 package deal
 
-type Portfolio struct {
-	ID      int
-	Name    string
-	UserId  int
-	Account int
-}
-
 type Symbol struct {
 	ID       int
 	Abbr     string

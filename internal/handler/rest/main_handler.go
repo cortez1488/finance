@@ -5,13 +5,15 @@ import (
 )
 
 type Handler struct {
-	authService      UserService
-	admSymbolService AdmSymbolService
+	authService        UserService
+	admSymbolService   AdmSymbolService
+	userAccountService UserAccountService
 }
 
-func NewHandler(userService UserService, admSymbolService AdmSymbolService) *Handler {
+func NewHandler(userService UserService, admSymbolService AdmSymbolService, userAccountService UserAccountService) *Handler {
 	return &Handler{authService: userService,
-		admSymbolService: admSymbolService}
+		admSymbolService:   admSymbolService,
+		userAccountService: userAccountService}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
@@ -25,10 +27,20 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		admin := api.Group("/admin", h.isAdmin)
 		{
-			admin.DELETE("/smb/:id", h.DeleteSymbol)
-			admin.POST("/smb", h.CreateSymbol)
-			admin.POST("/smb-set-price/:id")
+			admin.DELETE("/smb/:id", h.deleteSymbol)
+			admin.POST("/smb", h.createSymbol)
+			admin.POST("/smb-price", h.setPrice)
 		}
+
+		mybank := api.Group("/mybank")
+		{
+			mybank.POST("/portfolio", h.createPortfolio)
+			mybank.GET("/portfolio", h.getPortfolioList)
+			mybank.GET("/portfolio/:id", h.getPortfolio)
+
+		}
+
 	}
+
 	return router
 }

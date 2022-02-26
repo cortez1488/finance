@@ -11,16 +11,13 @@ func NewAdmSymbolService(repo AdmSymbol) *admSymbolService {
 }
 
 func (s *admSymbolService) CreateSymbol(symbol rest.AdmSymbolDTO) (int, error) {
-	//IS ADMIN:
 	return s.repo.CreateSymbol(symbol)
 }
 
-func (s *admSymbolService) SetPrice(price float64) error {
-	//IS ADMIN:
-	return s.repo.SetPrice(price)
+func (s *admSymbolService) SetPrice(symbol rest.AdmPriceDTO) error {
+	return s.repo.SetPrice(symbol)
 }
 
 func (s *admSymbolService) DeleteSymbol(id int) error {
-	//IS ADMIN:
 	return s.repo.DeleteSymbol(id)
 }
