@@ -29,6 +29,6 @@ func (h *Handler) DeleteSymbol(c *gin.Context) {
 	}
 	err = h.admSymbolService.DeleteSymbol(id)
 	if err != nil {
-		log.Fatalln("error with creating")
+		log.Fatalln("error with deleting" + err.Error())
 	}
 }

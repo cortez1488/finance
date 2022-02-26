@@ -25,9 +25,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		admin := api.Group("/admin", h.isAdmin)
 		{
-			admin.POST("/sbm-create", h.CreateSymbol)
-			admin.POST("/sbm-set-price/:id")
-			admin.DELETE("/:id", h.DeleteSymbol)
+			admin.DELETE("/smb/:id", h.DeleteSymbol)
+			admin.POST("/smb", h.CreateSymbol)
+			admin.POST("/smb-set-price/:id")
 		}
 	}
 	return router

@@ -31,7 +31,7 @@ func (r *admSymbolStorage) SetPrice(price float64) error {
 }
 
 func (r *admSymbolStorage) DeleteSymbol(id int) error {
-	query := fmt.Sprintf("DELETE FROM %s WHERE id = %1", "symbol")
+	query := fmt.Sprintf("DELETE FROM %s WHERE id = $1", "symbol")
 	_, err := r.db.Exec(query, id)
 	if err != nil {
 		return err
