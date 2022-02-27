@@ -39,14 +39,14 @@ func (r *UserAccountStorage) GetPortfolio(userId int, id int) (user_account.Port
 }
 
 func (r *UserAccountStorage) GetPortfolioList(userId int) ([]user_account.Portfolio, error) {
-	//query := fmt.Sprintf("SELECT * FROM %s WHERE user_id = $1", "portfolio")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id = $1", "portfolio")
 	var output []user_account.Portfolio
-	//rows := r.db.Query(query, userId)
-
-	//for rows.Next() {
-	//}
-
+	err := r.db.Select(&output, query, userId)
+	if err != nil {
+		return output, err
+	}
 	return output, nil
+
 }
 
 func (r *UserAccountStorage) History(userId int, timeAfter, timeBefore string) ([]deal.Deal, error) {

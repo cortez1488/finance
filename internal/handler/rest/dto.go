@@ -17,5 +17,5 @@ type AdmPriceDTO struct {
 
 type PortfolioDTO struct {
 	Name    string `json:"name"`
-	Account int    `json:"account,omitempty"`
+	Account int    `json:"account"`
 }

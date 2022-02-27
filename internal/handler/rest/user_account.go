@@ -45,5 +45,6 @@ func (h *Handler) getPortfolioList(c *gin.Context) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	c.JSON(http.StatusOK, portfolio)
 }
