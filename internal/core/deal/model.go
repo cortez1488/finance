@@ -1,9 +1,10 @@
 package deal
 
 type Symbol struct {
-	ID       int
-	Abbr     string
-	FullName string
+	ID       int    `db:"id"`
+	Abbr     string `db:"abbr"`
+	FullName string `db:"full_name"`
+	Price    float64
 }
 
 type Deal struct {

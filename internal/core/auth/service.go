@@ -14,26 +14,26 @@ const (
 	signingKey = "worldisyours758"
 )
 
-type AuthService struct {
+type authService struct {
 	repo Authorization
 }
 
-func NewAuthService(repo Authorization) *AuthService {
-	return &AuthService{repo: repo}
+func NewAuthService(repo Authorization) *authService {
+	return &authService{repo: repo}
 }
 
-func (s *AuthService) CreateUser(user rest.UserDTO) (int, error) {
-	user.Password = s.generateHashPassword(user.Password)
+func (s *authService) CreateUser(user rest.UserDTO) (int, error) {
+	user.Password = generateHashPassword(user.Password)
 	return s.repo.CreateUser(user)
 }
 
-func (s *AuthService) generateHashPassword(password string) string {
+func generateHashPassword(password string) string {
 	hash := sha1.New()
 	hash.Write([]byte(password))
 	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
 }
 
-func (s *AuthService) IsAdmin(id int64) bool {
+func (s *authService) IsAdmin(id int64) bool {
 	return s.repo.IsAdmin(id)
 }
 
@@ -44,8 +44,8 @@ type tokenClaims struct {
 	UserId int64 `json:"user_id"`
 }
 
-func (s *AuthService) GenerateToken(name, password string) (string, error) {
-	password = s.generateHashPassword(password)
+func (s *authService) GenerateToken(name, password string) (string, error) {
+	password = generateHashPassword(password)
 	user, err := s.repo.GetUser(name, password)
 	if err != nil {
 		return "", err
@@ -62,7 +62,7 @@ func (s *AuthService) GenerateToken(name, password string) (string, error) {
 	return token, err
 }
 
-func (s *AuthService) ParseToken(accessToken string) (int64, error) {
+func (s *authService) ParseToken(accessToken string) (int64, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) { // Ссылка !!!!! tokenClaims
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])

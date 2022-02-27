@@ -7,9 +7,11 @@ import (
 	"log"
 	"myFinanceTask/internal/core/admSymbol"
 	"myFinanceTask/internal/core/auth"
+	"myFinanceTask/internal/core/deal"
 	"myFinanceTask/internal/core/user_account"
 	psqlAdmSymbol "myFinanceTask/internal/db/admSymbol"
 	"myFinanceTask/internal/db/auth"
+	"myFinanceTask/internal/db/deal"
 	"myFinanceTask/internal/db/userAccount"
 	"myFinanceTask/internal/handler/rest"
 )
@@ -27,7 +29,10 @@ func main() {
 	userAccountRepo := userAccount.NewUserAccountStorage(db)
 	userAccountService := user_account.NewUserAccountService(userAccountRepo)
 
-	handler := rest.NewHandler(authService, admSymbolService, userAccountService)
+	dealRepo := dealStorage.NewDealStorage(db, rdb)
+	dealService := deal.NewDealService(dealRepo)
+
+	handler := rest.NewHandler(authService, admSymbolService, userAccountService, dealService)
 
 	server := handler.InitRoutes()
 	server.Run()

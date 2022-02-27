@@ -3,3 +3,6 @@
 
 --ALTER TABLE portfolio
 --DROP COLUMN IF EXISTS name;
+
+--ALTER TABLE portfolio
+--ALTER COLUMN account TYPE BIGINT;

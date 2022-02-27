@@ -1,10 +1,6 @@
 package rest
 
-type UserDTO struct {
-	Name     string `json:"name"`
-	Password string `json:"password"`
-}
-
+//----------- SYMBOL ADMINISTRATING -------------
 type AdmSymbolDTO struct {
 	Abbr     string `json:"abbr"`
 	FullName string `json:"fullName"`
@@ -15,7 +11,20 @@ type AdmPriceDTO struct {
 	Price float64 `json:"price"`
 }
 
+//----------- USER ACCOUNT -------------
+type UserDTO struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
 type PortfolioDTO struct {
-	Name    string `json:"name"`
-	Account int    `json:"account"`
+	Name    string  `json:"name"`
+	Account float64 `json:"account"` //float
+}
+
+//----------- DEAL  -------------
+type ShareDTO struct {
+	Abbr     string  `json:"abbr"`
+	FullName string  `json:"fullName"`
+	Price    float64 `json:"price"`
 }

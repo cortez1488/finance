@@ -5,19 +5,19 @@ import (
 	"myFinanceTask/internal/handler/rest"
 )
 
-type UserAccountService struct {
+type userAccountService struct {
 	repo UserAccountStorage
 }
 
-func NewUserAccountService(repo UserAccountStorage) *UserAccountService {
-	return &UserAccountService{repo: repo}
+func NewUserAccountService(repo UserAccountStorage) *userAccountService {
+	return &userAccountService{repo: repo}
 }
 
-func (s *UserAccountService) CreatePortfolio(userId int, dto rest.PortfolioDTO) (int, error) {
+func (s *userAccountService) CreatePortfolio(userId int, dto rest.PortfolioDTO) (int, error) {
 	return s.repo.CreatePortfolio(userId, dto)
 }
 
-func (s *UserAccountService) GetPortfolio(userId int, id int) (rest.PortfolioDTO, error) {
+func (s *userAccountService) GetPortfolio(userId int, id int) (rest.PortfolioDTO, error) {
 	bsns, err := s.repo.GetPortfolio(userId, id)
 	if err != nil {
 		return rest.PortfolioDTO{}, err
@@ -25,7 +25,7 @@ func (s *UserAccountService) GetPortfolio(userId int, id int) (rest.PortfolioDTO
 	dto := rest.PortfolioDTO{Name: bsns.Name, Account: bsns.Account}
 	return dto, nil
 }
-func (s *UserAccountService) GetPortfolioList(userId int) ([]rest.PortfolioDTO, error) {
+func (s *userAccountService) GetPortfolioList(userId int) ([]rest.PortfolioDTO, error) {
 	bsns, err := s.repo.GetPortfolioList(userId)
 	dto := make([]rest.PortfolioDTO, len(bsns))
 	if err != nil {
@@ -39,6 +39,6 @@ func (s *UserAccountService) GetPortfolioList(userId int) ([]rest.PortfolioDTO, 
 	return dto, nil
 }
 
-func (s *UserAccountService) History(userId int, timeAfter, timeBefore string) ([]deal.Deal, error) {
+func (s *userAccountService) History(userId int, timeAfter, timeBefore string) ([]deal.Deal, error) {
 	return s.repo.History(userId, timeAfter, timeBefore)
 }

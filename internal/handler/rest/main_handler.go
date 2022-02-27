@@ -8,12 +8,14 @@ type Handler struct {
 	authService        UserService
 	admSymbolService   AdmSymbolService
 	userAccountService UserAccountService
+	dealService        DealService
 }
 
-func NewHandler(userService UserService, admSymbolService AdmSymbolService, userAccountService UserAccountService) *Handler {
+func NewHandler(userService UserService, admSymbolService AdmSymbolService, userAccountService UserAccountService, dealService DealService) *Handler {
 	return &Handler{authService: userService,
 		admSymbolService:   admSymbolService,
-		userAccountService: userAccountService}
+		userAccountService: userAccountService,
+		dealService:        dealService}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
@@ -23,21 +25,27 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/sign-up", h.signUp)
 		auth.POST("/sign-in", h.signIn)
 	}
-	api := router.Group("/api", h.userIdentity)
+	api := router.Group("/api")
 	{
-		admin := api.Group("/admin", h.isAdmin)
+		admin := api.Group("/admin", h.userIdentity, h.isAdmin)
 		{
 			admin.DELETE("/smb/:id", h.deleteSymbol)
 			admin.POST("/smb", h.createSymbol)
 			admin.POST("/smb-price", h.setPrice)
 		}
 
-		mybank := api.Group("/mybank")
+		mybank := api.Group("/mybank", h.userIdentity)
 		{
 			mybank.POST("/portfolio", h.createPortfolio)
 			mybank.GET("/portfolio", h.getPortfolioList)
 			mybank.GET("/portfolio/:id", h.getPortfolio)
 
+		}
+
+		deal := api.Group("/deal")
+		{
+			deal.GET("/share", h.GetShareListInfo)
+			deal.GET("/share/:id", h.GetShareInfo)
 		}
 
 	}
