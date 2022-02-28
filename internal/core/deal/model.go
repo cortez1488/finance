@@ -27,3 +27,5 @@ type ActiveShare struct {
 	SymbolID    int
 	DealID      int
 }
+
+type ActType string

@@ -38,3 +38,5 @@ func (s *dealService) GetShareListInfo() ([]rest.ShareDTO, error) {
 	}
 	return output, nil
 }
+
+//--------- DEAL LOGIC -------------

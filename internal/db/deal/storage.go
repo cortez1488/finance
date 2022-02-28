@@ -15,13 +15,6 @@ type dealStorage struct {
 	rdb *redis.Client
 }
 
-type actType string
-
-const (
-	typeSell actType = "SELL"
-	typeBuy  actType = "BUY"
-)
-
 func NewDealStorage(db *sqlx.DB, rdb *redis.Client) *dealStorage {
 	return &dealStorage{db: db, rdb: rdb}
 }
@@ -87,7 +80,17 @@ func getSymbolPrice(rdb *redis.Client, symb deal.Symbol) (float64, error) {
 //---------- BUY / SELL BUSINESS -------------|
 //--------------------------------------------|
 
-func (r *dealStorage) SellShares(activeShareID, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string, dType actType) error {
+func (r *dealStorage) SellShares(activeShareID, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64,
+	date string, dType deal.ActType) error {
+	err := checkPortfolioOwner(r.db, userID, portfolioID)
+	if err != nil {
+		return err
+	}
+	return r.sellShareTXLogic(activeShareID, shareID, portfolioID, userID, quantity, symbolPrice, amount, date, dType)
+}
+
+func (r *dealStorage) sellShareTXLogic(activeShareID, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64,
+	date string, dType deal.ActType) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
@@ -119,7 +122,17 @@ func (r *dealStorage) SellShares(activeShareID, shareID, portfolioID, userID, qu
 	return nil
 }
 
-func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string, dType actType) error {
+func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string,
+	dType deal.ActType) error {
+	err := checkPortfolioOwner(r.db, userID, portfolioID)
+	if err != nil {
+		return err
+	}
+	return r.buyShareTXLogic(shareID, portfolioID, userID, quantity, symbolPrice, amount, date, dType)
+}
+
+func (r *dealStorage) buyShareTXLogic(shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string,
+	dType deal.ActType) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
@@ -148,11 +161,27 @@ func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symb
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
-func createDeal(tx *sqlx.Tx, dType actType, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string) (int64, error) {
+func checkPortfolioOwner(db *sqlx.DB, userID, portfolioID int) error {
+	var count int
+	checkQuery := fmt.Sprintf("SELECT count(*) FROM %s WHERE id = $1 and user_id = $2", "portfolio")
+	err := db.Select(&count, checkQuery, portfolioID, userID)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return errors.New("user is not portfolio's owner")
+	} else if count == 1 {
+		return nil
+	} else {
+		return errors.New("check portfolio's owner unknown error")
+	}
+}
+
+func createDeal(tx *sqlx.Tx, dType deal.ActType, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64,
+	date string) (int64, error) {
 	dealCreateQuery := fmt.Sprintf("INSERT INTO %s (type, symbol_id, symbol_price, number, amount, date,"+
 		" portfolio_id, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id", "deal")
 
@@ -189,11 +218,11 @@ func downActiveShare(tx *sqlx.Tx, activeShareID, quantity int) error {
 	return nil
 }
 
-func changePortfolioAccount(tx *sqlx.Tx, dType actType, portfolioID int, amount float64) error {
+func changePortfolioAccount(tx *sqlx.Tx, dType deal.ActType, portfolioID int, amount float64) error {
 	var actChar string
-	if dType == typeSell {
+	if dType == deal.TypeSell {
 		actChar = "+"
-	} else if dType == typeBuy {
+	} else if dType == deal.TypeBuy {
 		actChar = "-"
 	} else {
 		return errors.New("incorrect type of action")
