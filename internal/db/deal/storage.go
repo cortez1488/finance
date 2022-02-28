@@ -108,6 +108,10 @@ func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symb
 	}
 
 	err = changePortfolioAccount(tx, dType, portfolioID, amount)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
 	return nil
 }
 
