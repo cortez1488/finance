@@ -40,3 +40,12 @@ func (s *dealService) GetShareListInfo() ([]rest.ShareDTO, error) {
 }
 
 //--------- DEAL LOGIC -------------
+
+func (s *dealService) BuyShares(shareID, portfolioID, userID, quantity int) (float64, error) {
+
+	return 0, nil
+}
+
+func (s *dealService) SellShares(shareID, portfolioID, userID, quantity int) (float64, error) {
+	return 0, nil
+}

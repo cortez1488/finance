@@ -12,3 +12,6 @@ ALTER COLUMN account TYPE DECIMAL;
 
 ALTER TABLE portfolio
 ADD CHECK (account >= 0);
+
+ALTER TABLE active_share
+    ADD CHECK (number >= 0);

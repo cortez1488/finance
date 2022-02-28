@@ -1,6 +1,7 @@
 package userAccount
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"myFinanceTask/internal/core/deal"
@@ -32,7 +33,7 @@ func (r *userAccountStorage) GetPortfolio(userId int, id int) (user_account.Port
 	var output user_account.Portfolio
 	err := r.db.Get(&output, query, id, userId)
 	if err != nil {
-		return user_account.Portfolio{}, err
+		return user_account.Portfolio{}, errors.New("not owner of portfolio" + err.Error())
 	}
 
 	return output, nil

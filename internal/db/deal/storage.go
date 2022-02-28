@@ -82,15 +82,7 @@ func getSymbolPrice(rdb *redis.Client, symb deal.Symbol) (float64, error) {
 
 func (r *dealStorage) SellShares(activeShareID, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64,
 	date string, dType deal.ActType) error {
-	err := checkPortfolioOwner(r.db, userID, portfolioID)
-	if err != nil {
-		return err
-	}
-	return r.sellShareTXLogic(activeShareID, shareID, portfolioID, userID, quantity, symbolPrice, amount, date, dType)
-}
 
-func (r *dealStorage) sellShareTXLogic(activeShareID, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64,
-	date string, dType deal.ActType) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
@@ -124,15 +116,6 @@ func (r *dealStorage) sellShareTXLogic(activeShareID, shareID, portfolioID, user
 
 func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string,
 	dType deal.ActType) error {
-	err := checkPortfolioOwner(r.db, userID, portfolioID)
-	if err != nil {
-		return err
-	}
-	return r.buyShareTXLogic(shareID, portfolioID, userID, quantity, symbolPrice, amount, date, dType)
-}
-
-func (r *dealStorage) buyShareTXLogic(shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string,
-	dType deal.ActType) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
@@ -162,22 +145,6 @@ func (r *dealStorage) buyShareTXLogic(shareID, portfolioID, userID, quantity int
 		return err
 	}
 	return nil
-}
-
-func checkPortfolioOwner(db *sqlx.DB, userID, portfolioID int) error {
-	var count int
-	checkQuery := fmt.Sprintf("SELECT count(*) FROM %s WHERE id = $1 and user_id = $2", "portfolio")
-	err := db.Select(&count, checkQuery, portfolioID, userID)
-	if err != nil {
-		return err
-	}
-	if count == 0 {
-		return errors.New("user is not portfolio's owner")
-	} else if count == 1 {
-		return nil
-	} else {
-		return errors.New("check portfolio's owner unknown error")
-	}
 }
 
 func createDeal(tx *sqlx.Tx, dType deal.ActType, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64,

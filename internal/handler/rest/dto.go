@@ -28,3 +28,9 @@ type ShareDTO struct {
 	FullName string  `json:"fullName"`
 	Price    float64 `json:"price"`
 }
+
+type CreateDealDTO struct {
+	ShareID     int `json:"shareID"`
+	PortfolioID int `json:"portfolioID"`
+	Quantity    int `json:"quantity"`
+}
