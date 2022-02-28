@@ -87,8 +87,39 @@ func getSymbolPrice(rdb *redis.Client, symb deal.Symbol) (float64, error) {
 //---------- BUY / SELL BUSINESS -------------|
 //--------------------------------------------|
 
-func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string, dType actType) error {
+func (r *dealStorage) SellShares(activeShareID, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string, dType actType) error {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return err
+	}
 
+	_, err = createDeal(tx, dType, shareID, portfolioID, userID, quantity, symbolPrice, amount, date)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = downActiveShare(tx, activeShareID, quantity)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = changePortfolioAccount(tx, dType, portfolioID, amount)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string, dType actType) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
@@ -112,6 +143,12 @@ func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symb
 		tx.Rollback()
 		return err
 	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -140,6 +177,15 @@ func createActiveShare(tx *sqlx.Tx, dealID, portfolioID, shareID, quantity int, 
 		return err
 	}
 
+	return nil
+}
+
+func downActiveShare(tx *sqlx.Tx, activeShareID, quantity int) error {
+	downActiveShareQuery := fmt.Sprintf("UPDATE %s SET number = number - $1 WHERE id = $2", "active_share")
+	_, err := tx.Exec(downActiveShareQuery, quantity, activeShareID)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
