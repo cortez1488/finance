@@ -8,6 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"myFinanceTask/internal/core/deal"
 	"strconv"
+	"time"
 )
 
 type dealStorage struct {
@@ -81,7 +82,7 @@ func getSymbolPrice(rdb *redis.Client, symb deal.Symbol) (float64, error) {
 //--------------------------------------------|
 
 func (r *dealStorage) SellShares(activeShareID, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64,
-	date string, dType deal.ActType) error {
+	date time.Time, dType deal.ActType) error {
 
 	tx, err := r.db.Beginx()
 	if err != nil {
@@ -114,7 +115,7 @@ func (r *dealStorage) SellShares(activeShareID, shareID, portfolioID, userID, qu
 	return nil
 }
 
-func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string,
+func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date time.Time,
 	dType deal.ActType) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
@@ -127,8 +128,7 @@ func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symb
 		return err
 	}
 
-	intDealID := int(dealID)
-	err = createActiveShare(tx, intDealID, portfolioID, shareID, quantity, symbolPrice)
+	err = createActiveShare(tx, dealID, portfolioID, shareID, quantity, symbolPrice)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -148,16 +148,18 @@ func (r *dealStorage) BuyShares(shareID, portfolioID, userID, quantity int, symb
 }
 
 func createDeal(tx *sqlx.Tx, dType deal.ActType, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64,
-	date string) (int64, error) {
+	date time.Time) (int, error) {
+
 	dealCreateQuery := fmt.Sprintf("INSERT INTO %s (type, symbol_id, symbol_price, number, amount, date,"+
 		" portfolio_id, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id", "deal")
 
-	res, err := tx.Exec(dealCreateQuery, dType, shareID, portfolioID, userID, quantity, symbolPrice, amount, date)
+	row := tx.QueryRow(dealCreateQuery, dType, shareID, symbolPrice, quantity, amount, date, portfolioID, userID)
+	var id int
+	err := row.Scan(&id)
 	if err != nil {
 		return 0, err
 	}
 
-	id, err := res.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
@@ -205,9 +207,19 @@ func changePortfolioAccount(tx *sqlx.Tx, dType deal.ActType, portfolioID int, am
 }
 
 func (r *dealStorage) GetShareInfoOfActiveShareID(activeShareID int) (deal.Symbol, error) {
-	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", "symbol")
+	queryFromActiveShare := fmt.Sprintf("SELECT symbol_id FROM %s WHERE id = $1", "active_share")
+	querySymbol := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", "symbol")
+
+	var symbolID int
+	row := r.db.QueryRow(queryFromActiveShare, activeShareID)
+	err := row.Scan(&symbolID)
+	if err != nil {
+		return deal.Symbol{}, err
+	}
+
 	var symbol deal.Symbol
-	err := r.db.Select(&symbol, query, activeShareID)
+	row = r.db.QueryRow(querySymbol, symbolID)
+	err = row.Scan(&symbol.ID, &symbol.Abbr, &symbol.FullName)
 	if err != nil {
 		return deal.Symbol{}, err
 	}
@@ -217,19 +229,22 @@ func (r *dealStorage) GetShareInfoOfActiveShareID(activeShareID int) (deal.Symbo
 		return deal.Symbol{}, err
 	}
 	symbol.Price = price
+
 	return symbol, nil
 }
 
 func (r *dealStorage) IsPortfoliosOwner(userID, portfolioID int) (bool, error) {
 	query := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id = $1 AND id = $2", "portfolio")
-	var count int
+	count := make([]int, 1)
 	err := r.db.Select(&count, query, userID, portfolioID)
 	if err != nil {
 		return false, err
 	}
-	if count == 1 {
+
+	//log.Println("IsPortfoliosOwner(): ", "userID =", userID, " portfolioID =", portfolioID, count)
+	if count[1] == 1 {
 		return true, nil
-	} else if count == 0 {
+	} else if count[1] == 0 {
 		return false, nil
 	} else {
 		return false, errors.New("unknown error on portfolio's owner")

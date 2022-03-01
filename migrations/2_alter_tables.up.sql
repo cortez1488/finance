@@ -14,4 +14,7 @@ ALTER TABLE portfolio
 ADD CHECK (account >= 0);
 
 ALTER TABLE active_share
-    ADD CHECK (number >= 0);
+ADD CHECK (number >= 0);
+
+ALTER TABLE  deal
+ALTER COLUMN date TYPE timestamp;

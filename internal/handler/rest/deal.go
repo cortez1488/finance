@@ -55,7 +55,7 @@ func (h *Handler) sellShares(c *gin.Context) {
 	}
 	money, err := h.dealService.SellShares(input.ShareID, input.PortfolioID, userID, input.Quantity)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln(errors.New("SERVICE SellShares(): " + err.Error()))
 	}
 	c.JSON(http.StatusOK, money)
 }
