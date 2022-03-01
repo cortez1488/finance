@@ -1,7 +1,9 @@
 package deal
 
 import (
+	"errors"
 	"myFinanceTask/internal/handler/rest"
+	"time"
 )
 
 type dealService struct {
@@ -42,10 +44,51 @@ func (s *dealService) GetShareListInfo() ([]rest.ShareDTO, error) {
 //--------- DEAL LOGIC -------------
 
 func (s *dealService) BuyShares(shareID, portfolioID, userID, quantity int) (float64, error) {
+	owner, err := s.repo.IsPortfoliosOwner(userID, portfolioID)
+	if err != nil {
+		return 0, err
+	}
+	if !owner {
+		return 0, errors.New("you're not owner of portfolio")
+	}
 
-	return 0, nil
+	share, err := s.GetShareInfo(shareID)
+	if err != nil {
+		return 0, err
+	}
+
+	price := share.Price
+	amount := price * float64(quantity)
+
+	err = s.repo.BuyShares(shareID, portfolioID, userID, quantity, price, amount, time.Now().String(), TypeBuy)
+	if err != nil {
+		return 0, err
+	}
+
+	return amount, nil
 }
 
-func (s *dealService) SellShares(shareID, portfolioID, userID, quantity int) (float64, error) {
-	return 0, nil
+func (s *dealService) SellShares(activeShareID, portfolioID, userID, quantity int) (float64, error) {
+	owner, err := s.repo.IsPortfoliosOwner(userID, portfolioID)
+	if err != nil {
+		return 0, err
+	}
+	if !owner {
+		return 0, errors.New("you're not owner of portfolio")
+	}
+
+	share, err := s.repo.GetShareInfoOfActiveShareID(activeShareID)
+	if err != nil {
+		return 0, err
+	}
+
+	price := share.Price
+	amount := price * float64(quantity)
+
+	err = s.repo.SellShares(activeShareID, share.ID, portfolioID, userID, quantity, price, amount, time.Now().String(), TypeSell)
+	if err != nil {
+		return 0, err
+	}
+
+	return amount, nil
 }

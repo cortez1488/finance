@@ -42,10 +42,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 		}
 
-		deal := api.Group("/deal")
+		deal := api.Group("/deal", h.userIdentity)
 		{
 			deal.GET("/share", h.GetShareListInfo)
 			deal.GET("/share/:id", h.GetShareInfo)
+
+			deal.POST("/buy", h.BuyShares)
+			deal.POST("/sell", h.SellShares)
 		}
 
 	}

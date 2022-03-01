@@ -5,5 +5,7 @@ type DealStorage interface {
 	GetShareListInfo() ([]Symbol, error)
 
 	BuyShares(shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string, dType ActType) error
-	SellShares(activeShareID, shareID, portfolioID, userID, quantity int, symbolPrice, amount float64, date string, dType ActType) error
+	SellShares(activeShareID, portfolioID, shareID, userID, quantity int, symbolPrice, amount float64, date string, dType ActType) error
+	GetShareInfoOfActiveShareID(activeShareID int) (Symbol, error)
+	IsPortfoliosOwner(userID, portfolioID int) (bool, error)
 }

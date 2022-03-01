@@ -203,3 +203,35 @@ func changePortfolioAccount(tx *sqlx.Tx, dType deal.ActType, portfolioID int, am
 
 	return nil
 }
+
+func (r *dealStorage) GetShareInfoOfActiveShareID(activeShareID int) (deal.Symbol, error) {
+	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", "symbol")
+	var symbol deal.Symbol
+	err := r.db.Select(&symbol, query, activeShareID)
+	if err != nil {
+		return deal.Symbol{}, err
+	}
+
+	price, err := getSymbolPrice(r.rdb, symbol)
+	if err != nil {
+		return deal.Symbol{}, err
+	}
+	symbol.Price = price
+	return symbol, nil
+}
+
+func (r *dealStorage) IsPortfoliosOwner(userID, portfolioID int) (bool, error) {
+	query := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id = $1 AND id = $2", "portfolio")
+	var count int
+	err := r.db.Select(&count, query, userID, portfolioID)
+	if err != nil {
+		return false, err
+	}
+	if count == 1 {
+		return true, nil
+	} else if count == 0 {
+		return false, nil
+	} else {
+		return false, errors.New("unknown error on portfolio's owner")
+	}
+}

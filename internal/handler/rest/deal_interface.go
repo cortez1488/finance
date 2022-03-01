@@ -5,5 +5,5 @@ type DealService interface {
 	GetShareListInfo() ([]ShareDTO, error)
 
 	BuyShares(shareID, portfolioID, userID, quantity int) (float64, error)
-	SellShares(shareID, portfolioID, userID, quantity int) (float64, error)
+	SellShares(activeShareID, portfolioID, userID, quantity int) (float64, error)
 }
