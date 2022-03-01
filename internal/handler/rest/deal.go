@@ -1,13 +1,14 @@
 package rest
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"strconv"
 )
 
-func (h *Handler) GetShareInfo(c *gin.Context) {
+func (h *Handler) getShareInfo(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		log.Fatalln(err)
@@ -20,7 +21,7 @@ func (h *Handler) GetShareInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, share)
 }
 
-func (h *Handler) GetShareListInfo(c *gin.Context) {
+func (h *Handler) getShareListInfo(c *gin.Context) {
 	shares, err := h.dealService.GetShareListInfo()
 	if err != nil {
 		log.Fatalln(err)
@@ -28,23 +29,23 @@ func (h *Handler) GetShareListInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, shares)
 }
 
-func (h *Handler) BuyShares(c *gin.Context) {
+func (h *Handler) buyShares(c *gin.Context) {
 	var input CreateDealDTO
 	userID := int(getUserID(c))
 
 	err := c.BindJSON(&input)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln(errors.New("BindJSON(): " + err.Error()))
 	}
 	money, err := h.dealService.BuyShares(input.ShareID, input.PortfolioID, userID, input.Quantity)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln(errors.New("h.dealService.BuyShares(): " + err.Error()))
 	}
 	c.JSON(http.StatusOK, money)
 
 }
 
-func (h *Handler) SellShares(c *gin.Context) {
+func (h *Handler) sellShares(c *gin.Context) {
 	var input CreateDealDTO
 	userID := int(getUserID(c))
 

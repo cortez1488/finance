@@ -46,7 +46,7 @@ func (s *dealService) GetShareListInfo() ([]rest.ShareDTO, error) {
 func (s *dealService) BuyShares(shareID, portfolioID, userID, quantity int) (float64, error) {
 	owner, err := s.repo.IsPortfoliosOwner(userID, portfolioID)
 	if err != nil {
-		return 0, err
+		return 0, errors.New("IsPortfoliosOwner(): " + err.Error())
 	}
 	if !owner {
 		return 0, errors.New("you're not owner of portfolio")
@@ -54,7 +54,7 @@ func (s *dealService) BuyShares(shareID, portfolioID, userID, quantity int) (flo
 
 	share, err := s.GetShareInfo(shareID)
 	if err != nil {
-		return 0, err
+		return 0, errors.New("GetShareInfo(): " + err.Error())
 	}
 
 	price := share.Price
@@ -62,7 +62,7 @@ func (s *dealService) BuyShares(shareID, portfolioID, userID, quantity int) (flo
 
 	err = s.repo.BuyShares(shareID, portfolioID, userID, quantity, price, amount, time.Now().String(), TypeBuy)
 	if err != nil {
-		return 0, err
+		return 0, errors.New("BuyShares(): " + err.Error())
 	}
 
 	return amount, nil
@@ -71,7 +71,7 @@ func (s *dealService) BuyShares(shareID, portfolioID, userID, quantity int) (flo
 func (s *dealService) SellShares(activeShareID, portfolioID, userID, quantity int) (float64, error) {
 	owner, err := s.repo.IsPortfoliosOwner(userID, portfolioID)
 	if err != nil {
-		return 0, err
+		return 0, errors.New("IsPortfoliosOwner(): " + err.Error())
 	}
 	if !owner {
 		return 0, errors.New("you're not owner of portfolio")
@@ -79,7 +79,7 @@ func (s *dealService) SellShares(activeShareID, portfolioID, userID, quantity in
 
 	share, err := s.repo.GetShareInfoOfActiveShareID(activeShareID)
 	if err != nil {
-		return 0, err
+		return 0, errors.New("GetShareInfoOfActiveShareID(): " + err.Error())
 	}
 
 	price := share.Price
@@ -87,7 +87,7 @@ func (s *dealService) SellShares(activeShareID, portfolioID, userID, quantity in
 
 	err = s.repo.SellShares(activeShareID, share.ID, portfolioID, userID, quantity, price, amount, time.Now().String(), TypeSell)
 	if err != nil {
-		return 0, err
+		return 0, errors.New("SellShares(): " + err.Error())
 	}
 
 	return amount, nil
