@@ -1,6 +1,7 @@
 package user_account
 
 import (
+	"log"
 	"myFinanceTask/internal/core/deal"
 	"myFinanceTask/internal/handler/rest"
 )
@@ -14,10 +15,12 @@ func NewUserAccountService(repo UserAccountStorage) *userAccountService {
 }
 
 func (s *userAccountService) CreatePortfolio(userId int, dto rest.PortfolioDTO) (int, error) {
+	log.Printf("Creating portfolio: userID: %d, %v", userId, dto)
 	return s.repo.CreatePortfolio(userId, dto)
 }
 
 func (s *userAccountService) GetPortfolio(userId int, id int) (rest.PortfolioDTO, error) {
+	log.Printf("Getting portfolio: userID: %d", userId)
 	bsns, err := s.repo.GetPortfolio(userId, id)
 	if err != nil {
 		return rest.PortfolioDTO{}, err
@@ -26,6 +29,7 @@ func (s *userAccountService) GetPortfolio(userId int, id int) (rest.PortfolioDTO
 	return dto, nil
 }
 func (s *userAccountService) GetPortfolioList(userId int) ([]rest.PortfolioDTO, error) {
+	log.Printf("Getting portfolio: userID: %d", userId)
 	bsns, err := s.repo.GetPortfolioList(userId)
 	dto := make([]rest.PortfolioDTO, len(bsns))
 	if err != nil {
@@ -40,5 +44,6 @@ func (s *userAccountService) GetPortfolioList(userId int) ([]rest.PortfolioDTO, 
 }
 
 func (s *userAccountService) History(userId int, timeAfter, timeBefore string) ([]deal.Deal, error) {
+	log.Printf("Getting history: userID: %d", userId)
 	return s.repo.History(userId, timeAfter, timeBefore)
 }

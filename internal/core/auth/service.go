@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt"
+	"log"
 	"myFinanceTask/internal/handler/rest"
 	"time"
 )
@@ -45,6 +46,7 @@ type tokenClaims struct {
 }
 
 func (s *authService) GenerateToken(name, password string) (string, error) {
+	log.Println("Generating auth token")
 	password = generateHashPassword(password)
 	user, err := s.repo.GetUser(name, password)
 	if err != nil {
@@ -63,6 +65,7 @@ func (s *authService) GenerateToken(name, password string) (string, error) {
 }
 
 func (s *authService) ParseToken(accessToken string) (int64, error) {
+	log.Println("Parsing access token")
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) { // Ссылка !!!!! tokenClaims
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])

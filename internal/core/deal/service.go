@@ -86,6 +86,7 @@ func (s *dealService) SellShares(activeShareID, portfolioID, userID, quantity in
 
 	price := share.Price
 	amount := price * float64(quantity)
+	log.Printf("Sell share %s Quantity: %d Price: %g Amount: %g", share.Abbr, quantity, share.Price, amount)
 
 	err = s.repo.SellShares(activeShareID, share.ID, portfolioID, userID, quantity, price, amount, time.Now(), TypeSell)
 	if err != nil {
