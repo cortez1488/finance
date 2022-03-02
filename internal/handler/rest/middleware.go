@@ -1,8 +1,8 @@
 package rest
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 )
 
@@ -14,11 +14,12 @@ const (
 func (h *Handler) userIdentity(c *gin.Context) {
 	header := c.GetHeader(authHeader)
 	if header == "" {
-		log.Fatal("empty header")
+		c.AbortWithStatusJSON(http.StatusForbidden, "You are unauthorized.")
 	}
 	id, err := h.authService.ParseToken(header)
 	if err != nil {
-		log.Fatal(err)
+		newErrorResponse("Server error with parsing your auth token. ", http.StatusInternalServerError,
+			errors.New("h.authService.ParseToken(header): "+err.Error()), c)
 	}
 	c.Set(userCtx, id)
 }
@@ -26,7 +27,8 @@ func (h *Handler) userIdentity(c *gin.Context) {
 func getUserID(c *gin.Context) int64 {
 	id, exists := c.Get(userCtx)
 	if !exists {
-		log.Fatal("user don't exists")
+		newErrorResponse("Server auth error.", http.StatusInternalServerError,
+			errors.New("no user context"), c)
 	}
 	return id.(int64)
 }
@@ -34,8 +36,6 @@ func getUserID(c *gin.Context) int64 {
 func (h *Handler) isAdmin(c *gin.Context) {
 	id := getUserID(c)
 	if !h.authService.IsAdmin(id) {
-		c.JSON(http.StatusForbidden, map[string]string{
-			"error": "no access",
-		})
+		c.AbortWithStatusJSON(http.StatusForbidden, "No access.")
 	}
 }
