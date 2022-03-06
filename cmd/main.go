@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/go-redis/redis/v8"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -16,6 +17,7 @@ import (
 	price_refresh_storage "myFinanceTask/internal/db/price_refresh"
 	"myFinanceTask/internal/db/userAccount"
 	"myFinanceTask/internal/handler/rest"
+	"time"
 )
 
 func main() {
@@ -34,13 +36,22 @@ func main() {
 	dealRepo := dealStorage.NewDealStorage(db, rdb)
 	dealService := deal.NewDealService(dealRepo)
 
-	priceRefreshRepo := price_refresh_storage.NewPriceRefreshStorage(db)
+	priceRefreshRepo := price_refresh_storage.NewPriceRefreshStorage(db, rdb)
 	priceRefreshService := price_refresh.NewPriceRefreshService(priceRefreshRepo)
 
 	handler := rest.NewHandler(authService, admSymbolService, userAccountService, dealService, priceRefreshService)
 
 	server := handler.InitRoutes()
-	handler.RefreshPrices()
+
+	rdb.Set(context.Background(), "test", "test", 0)
+	log.Println("we did it")
+
+	go func() {
+		for {
+			handler.RefreshPrices()
+			time.Sleep(time.Second * 3)
+		}
+	}()
 
 	server.Run()
 }

@@ -1,7 +1,6 @@
 package price_refresh
 
 import (
-	"fmt"
 	"log"
 	"myFinanceTask/internal/handler/rest"
 	"sort"
@@ -18,29 +17,40 @@ func NewPriceRefreshService(repo PricesRefreshStorage) *priceRefreshService {
 }
 
 func (s *priceRefreshService) RefreshPrices(rawData *[]rest.RefreshDBDTO) error {
+	log.Println("Started refreshing redis prices.")
 	existingSymbolsStrings, err := s.repo.GetCurrentSymbols()
 	if err != nil {
 		return err
 	}
 	sort.Strings(existingSymbolsStrings)
-	fmt.Println(existingSymbolsStrings)
-
-	serviceData := make([]Symbol, len(existingSymbolsStrings))
 
 	start := time.Now()
+	serviceData, err := makeServiceData(rawData, existingSymbolsStrings)
+	if err != nil {
+		return err
+	}
+
+	resTime, err := s.repo.RefreshPrices(serviceData)
+	log.Println("Time fore searching existing symbols:", resTime.Sub(start))
+
+	return nil
+}
+
+func makeServiceData(rawData *[]rest.RefreshDBDTO, existingSymbolsStrings []string) ([]Symbol, error) {
+	var err error
+
+	serviceData := make([]Symbol, len(existingSymbolsStrings))
 	for index, symbol := range *rawData {
 
 		if binaryStringSearch(symbol.Symbol, existingSymbolsStrings) {
 			serviceData[index].Price, err = strconv.ParseFloat(symbol.Price, 64)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			serviceData[index].Symbol = symbol.Symbol
 		}
 	}
-
-	log.Println("Time fore searching existing symbols:", time.Since(start))
-	return s.repo.RefreshPrices(&serviceData)
+	return serviceData, nil
 }
 
 func binaryStringSearch(needle string, haystack []string) bool {
