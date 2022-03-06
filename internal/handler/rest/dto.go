@@ -34,3 +34,10 @@ type CreateDealDTO struct {
 	PortfolioID int `json:"portfolioID"`
 	Quantity    int `json:"quantity"`
 }
+
+//---------- REFRESH -----------
+
+type RefreshDBDTO struct {
+	Symbol string `json:"symbol"`
+	Price  string `json:"price"`
+}

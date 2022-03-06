@@ -5,17 +5,22 @@ import (
 )
 
 type Handler struct {
-	authService        UserService
-	admSymbolService   AdmSymbolService
-	userAccountService UserAccountService
-	dealService        DealService
+	authService         UserService
+	admSymbolService    AdmSymbolService
+	userAccountService  UserAccountService
+	dealService         DealService
+	priceRefreshService PricesRefreshService
 }
 
-func NewHandler(userService UserService, admSymbolService AdmSymbolService, userAccountService UserAccountService, dealService DealService) *Handler {
+func NewHandler(userService UserService, admSymbolService AdmSymbolService, userAccountService UserAccountService,
+	dealService DealService, priceRefreshService PricesRefreshService) *Handler {
+
 	return &Handler{authService: userService,
-		admSymbolService:   admSymbolService,
-		userAccountService: userAccountService,
-		dealService:        dealService}
+		admSymbolService:    admSymbolService,
+		userAccountService:  userAccountService,
+		dealService:         dealService,
+		priceRefreshService: priceRefreshService,
+	}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {

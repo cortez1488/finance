@@ -8,10 +8,12 @@ import (
 	"myFinanceTask/internal/core/admSymbol"
 	"myFinanceTask/internal/core/auth"
 	"myFinanceTask/internal/core/deal"
+	"myFinanceTask/internal/core/price_refresh"
 	"myFinanceTask/internal/core/user_account"
 	psqlAdmSymbol "myFinanceTask/internal/db/admSymbol"
 	"myFinanceTask/internal/db/auth"
 	"myFinanceTask/internal/db/deal"
+	price_refresh_storage "myFinanceTask/internal/db/price_refresh"
 	"myFinanceTask/internal/db/userAccount"
 	"myFinanceTask/internal/handler/rest"
 )
@@ -32,9 +34,14 @@ func main() {
 	dealRepo := dealStorage.NewDealStorage(db, rdb)
 	dealService := deal.NewDealService(dealRepo)
 
-	handler := rest.NewHandler(authService, admSymbolService, userAccountService, dealService)
+	priceRefreshRepo := price_refresh_storage.NewPriceRefreshStorage(db)
+	priceRefreshService := price_refresh.NewPriceRefreshService(priceRefreshRepo)
+
+	handler := rest.NewHandler(authService, admSymbolService, userAccountService, dealService, priceRefreshService)
 
 	server := handler.InitRoutes()
+	handler.RefreshPrices()
+
 	server.Run()
 }
 
