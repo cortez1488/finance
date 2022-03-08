@@ -1,0 +1,21 @@
+
+db:
+  postgres:
+    tableNames:
+      symbol: "symbol"
+      user: "users"
+      deal: "deal"
+      activeShare: "active_share"
+      portfolio: "portfolio"
+
+    drivername: "postgres"
+    username: "postgres"
+    password: "qwerty"
+    dbname: "postgres"
+    sslmode: "disable"
+
+  redis:
+    address: "localhost:6379"
+
+business:
+  pricesRefillTime: "3s"

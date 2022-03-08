@@ -1,10 +1,11 @@
 package main
 
 import (
-	"context"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/spf13/viper"
 	"log"
 	"myFinanceTask/internal/core/admSymbol"
 	"myFinanceTask/internal/core/auth"
@@ -20,7 +21,12 @@ import (
 	"time"
 )
 
+func init() {
+	initConfig()
+}
+
 func main() {
+
 	db := initPostgresDB()
 	rdb := initRedisDB()
 
@@ -43,21 +49,37 @@ func main() {
 
 	server := handler.InitRoutes()
 
-	rdb.Set(context.Background(), "test", "test", 0)
-	log.Println("we did it")
-
 	go func() {
 		for {
 			handler.RefreshPrices()
-			time.Sleep(time.Second * 3)
+			refreshTime, err := time.ParseDuration(viper.Get("business.pricesRefillTime").(string))
+			if err != nil {
+				log.Fatalln("parsing refresh time error")
+			}
+			time.Sleep(refreshTime)
 		}
 	}()
 
 	server.Run()
 }
 
+func initConfig() {
+	viper.AddConfigPath("configs")
+	viper.SetConfigName("config")
+
+	viper.SetDefault("db.redis.password", "")
+	viper.SetDefault("db.redis.db", 0)
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatalln("set config error")
+	}
+}
+
 func initPostgresDB() *sqlx.DB {
-	db, err := sqlx.Connect("postgres", "user=postgres password=qwerty dbname=postgres sslmode=disable")
+	db, err := sqlx.Connect(viper.Get("db.postgres.drivername").(string), fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s",
+		viper.Get("db.postgres.username"), viper.Get("db.postgres.password"),
+		viper.Get("db.postgres.dbname"), viper.Get("db.postgres.sslmode")))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,9 +88,9 @@ func initPostgresDB() *sqlx.DB {
 
 func initRedisDB() *redis.Client {
 	db := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     viper.Get("db.redis.address").(string),
+		Password: viper.Get("db.redis.password").(string), // no password set
+		DB:       viper.Get("db.redis.db").(int),          // use default DB
 	})
 	return db
 }

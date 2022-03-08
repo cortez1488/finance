@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/jmoiron/sqlx"
+	"github.com/spf13/viper"
 	"myFinanceTask/internal/core/deal"
 	"strconv"
 	"time"
@@ -22,7 +23,7 @@ func NewDealStorage(db *sqlx.DB, rdb *redis.Client) *dealStorage {
 
 func (r *dealStorage) GetShareInfo(id int) (deal.Symbol, error) {
 	var output deal.Symbol
-	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", "symbol")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", viper.GetString("db.postgres.tableNames.symbol"))
 	row := r.db.QueryRow(query, id)
 	err := row.Scan(&output.ID, &output.Abbr, &output.FullName)
 	if err != nil {
@@ -39,7 +40,7 @@ func (r *dealStorage) GetShareInfo(id int) (deal.Symbol, error) {
 
 func (r *dealStorage) GetShareListInfo() ([]deal.Symbol, error) {
 	var output []deal.Symbol
-	query := fmt.Sprintf("SELECT * FROM %s", "symbol")
+	query := fmt.Sprintf("SELECT * FROM %s", viper.GetString("db.postgres.tableNames.symbol"))
 	err := r.db.Select(&output, query)
 	if err != nil {
 		return []deal.Symbol{}, err
@@ -151,7 +152,8 @@ func createDeal(tx *sqlx.Tx, dType deal.ActType, shareID, portfolioID, userID, q
 	date time.Time) (int, error) {
 
 	dealCreateQuery := fmt.Sprintf("INSERT INTO %s (type, symbol_id, symbol_price, number, amount, date,"+
-		" portfolio_id, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id", "deal")
+		" portfolio_id, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
+		viper.GetString("db.postgres.tableNames.deal"))
 
 	row := tx.QueryRow(dealCreateQuery, dType, shareID, symbolPrice, quantity, amount, date, portfolioID, userID)
 	var id int
@@ -168,7 +170,7 @@ func createDeal(tx *sqlx.Tx, dType deal.ActType, shareID, portfolioID, userID, q
 
 func createActiveShare(tx *sqlx.Tx, dealID, portfolioID, shareID, quantity int, symbolPrice float64) error {
 	activeShareQuery := fmt.Sprintf("INSERT INTO %s (price, number, portfolio_id, symbol_id, deal_id) "+
-		"VALUES ($1, $2, $3, $4, $5)", "active_share")
+		"VALUES ($1, $2, $3, $4, $5)", viper.GetString("db.postgres.tableNames.activeShare"))
 
 	_, err := tx.Exec(activeShareQuery, symbolPrice, quantity, portfolioID, shareID, dealID)
 	if err != nil {
@@ -179,7 +181,8 @@ func createActiveShare(tx *sqlx.Tx, dealID, portfolioID, shareID, quantity int, 
 }
 
 func downActiveShare(tx *sqlx.Tx, activeShareID, quantity int) error {
-	downActiveShareQuery := fmt.Sprintf("UPDATE %s SET number = number - $1 WHERE id = $2", "active_share")
+	downActiveShareQuery := fmt.Sprintf("UPDATE %s SET number = number - $1 WHERE id = $2",
+		viper.GetString("db.postgres.tableNames.activeShare"))
 	_, err := tx.Exec(downActiveShareQuery, quantity, activeShareID)
 	if err != nil {
 		return err
@@ -197,7 +200,8 @@ func changePortfolioAccount(tx *sqlx.Tx, dType deal.ActType, portfolioID int, am
 		return errors.New("incorrect type of action")
 	}
 
-	portfolioQuery := fmt.Sprintf("UPDATE %s SET account = account %s $1 WHERE id = $2", "portfolio", actChar)
+	portfolioQuery := fmt.Sprintf("UPDATE %s SET account = account %s $1 WHERE id = $2",
+		viper.GetString("db.postgres.tableNames.portfolio"), actChar)
 	_, err := tx.Exec(portfolioQuery, amount, portfolioID)
 	if err != nil {
 		return err
@@ -207,8 +211,9 @@ func changePortfolioAccount(tx *sqlx.Tx, dType deal.ActType, portfolioID int, am
 }
 
 func (r *dealStorage) GetShareInfoOfActiveShareID(activeShareID int) (deal.Symbol, error) {
-	queryFromActiveShare := fmt.Sprintf("SELECT symbol_id FROM %s WHERE id = $1", "active_share")
-	querySymbol := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", "symbol")
+	queryFromActiveShare := fmt.Sprintf("SELECT symbol_id FROM %s WHERE id = $1",
+		viper.GetString("db.postgres.tableNames.activeShare"))
+	querySymbol := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", viper.GetString("db.postgres.tableNames.symbol"))
 
 	var symbolID int
 	row := r.db.QueryRow(queryFromActiveShare, activeShareID)
@@ -234,7 +239,8 @@ func (r *dealStorage) GetShareInfoOfActiveShareID(activeShareID int) (deal.Symbo
 }
 
 func (r *dealStorage) IsPortfoliosOwner(userID, portfolioID int) (bool, error) {
-	query := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id = $1 AND id = $2", "portfolio")
+	query := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id = $1 AND id = $2",
+		viper.GetString("db.postgres.tableNames.portfolio"))
 	count := make([]int, 1)
 	err := r.db.Select(&count, query, userID, portfolioID)
 	if err != nil {

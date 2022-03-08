@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/spf13/viper"
 	"myFinanceTask/internal/core/deal"
 	"myFinanceTask/internal/core/user_account"
 	"myFinanceTask/internal/handler/rest"
@@ -18,7 +19,8 @@ func NewUserAccountStorage(db *sqlx.DB) *userAccountStorage {
 }
 
 func (r *userAccountStorage) CreatePortfolio(userId int, dto rest.PortfolioDTO) (int, error) {
-	query := fmt.Sprintf("INSERT INTO %s (name, user_id) VALUES ($1, $2) RETURNING id", "portfolio")
+	query := fmt.Sprintf("INSERT INTO %s (name, user_id) VALUES ($1, $2) RETURNING id",
+		viper.GetString("db.postgres.tableNames.portfolio"))
 	var id int
 	err := r.db.Get(&id, query, dto.Name, userId)
 	if err != nil {
@@ -29,7 +31,8 @@ func (r *userAccountStorage) CreatePortfolio(userId int, dto rest.PortfolioDTO) 
 }
 
 func (r *userAccountStorage) GetPortfolio(userId int, id int) (user_account.Portfolio, error) {
-	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1 and user_id = $2", "portfolio")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1 and user_id = $2",
+		viper.GetString("db.postgres.tableNames.portfolio"))
 	var output user_account.Portfolio
 	err := r.db.Get(&output, query, id, userId)
 	if err != nil {
@@ -40,7 +43,8 @@ func (r *userAccountStorage) GetPortfolio(userId int, id int) (user_account.Port
 }
 
 func (r *userAccountStorage) GetPortfolioList(userId int) ([]user_account.Portfolio, error) {
-	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id = $1", "portfolio")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id = $1",
+		viper.GetString("db.postgres.tableNames.portfolio"))
 	var output []user_account.Portfolio
 	err := r.db.Select(&output, query, userId)
 	if err != nil {
