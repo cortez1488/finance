@@ -5,5 +5,5 @@ type UserAccountService interface {
 	GetPortfolio(userId, id int) (PortfolioDTO, error) //Переделать на DTO
 	GetPortfolioList(userId int) ([]PortfolioDTO, error)
 
-	//History(userId int, timeAfter, timeBefore string) ([]deal.Deal, error) //Переделать на DTO
+	History(userId int) ([]HistoryDTO, error) //Переделать на DTO
 }

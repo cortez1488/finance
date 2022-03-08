@@ -43,7 +43,33 @@ func (s *userAccountService) GetPortfolioList(userId int) ([]rest.PortfolioDTO, 
 	return dto, nil
 }
 
-func (s *userAccountService) History(userId int, timeAfter, timeBefore string) ([]deal.Deal, error) {
+func (s *userAccountService) History(userId int) ([]rest.HistoryDTO, error) {
 	log.Printf("Getting history: userID: %d", userId)
-	return s.repo.History(userId, timeAfter, timeBefore)
+
+	result, err := s.repo.History(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.getResultDTO(result)
+}
+
+func (s *userAccountService) getResultDTO(result []deal.Deal) ([]rest.HistoryDTO, error) {
+	resultDTO := make([]rest.HistoryDTO, len(result))
+	for index, object := range result {
+		symbolAbbr, err := s.repo.GetSymbolAbbr(object.SymbolID)
+		if err != nil {
+			return nil, err
+		}
+
+		resultDTO[index].Type = object.Type
+		resultDTO[index].SymbolAbbr = symbolAbbr
+		resultDTO[index].SymbolPrice = object.SymbolPrice
+		resultDTO[index].Number = object.Number
+		resultDTO[index].Amount = object.Amount
+		resultDTO[index].Date = object.Date
+	}
+
+	return resultDTO, nil
+
 }

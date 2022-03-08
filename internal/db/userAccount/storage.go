@@ -54,6 +54,25 @@ func (r *userAccountStorage) GetPortfolioList(userId int) ([]user_account.Portfo
 
 }
 
-func (r *userAccountStorage) History(userId int, timeAfter, timeBefore string) ([]deal.Deal, error) {
-	return []deal.Deal{}, nil
+func (r *userAccountStorage) History(userId int) ([]deal.Deal, error) {
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id = $1",
+		viper.GetString("db.postgres.tableNames.deal"))
+	var result []deal.Deal
+
+	err := r.db.Select(&result, query, userId)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (r *userAccountStorage) GetSymbolAbbr(symbolID int) (string, error) {
+	query := fmt.Sprintf("SElECT abbr FROM %s WHERE id = $1", viper.GetString("db.postgres.tableNames.symbol"))
+
+	var abbr string
+	err := r.db.Get(&abbr, query, symbolID)
+	if err != nil {
+		return "", err
+	}
+	return abbr, nil
 }

@@ -22,6 +22,15 @@ type PortfolioDTO struct {
 	Account float64 `json:"account"` //float
 }
 
+type HistoryDTO struct {
+	Type        string  `db:"type"`
+	SymbolAbbr  string  `db:"symbol_id"`
+	SymbolPrice float64 `db:"symbol_price"`
+	Number      int     `db:"number"`
+	Amount      float64 `db:"amount"`
+	Date        string  `db:"date"`
+}
+
 //----------- DEAL  -------------
 type ShareDTO struct {
 	Abbr     string  `json:"abbr"`

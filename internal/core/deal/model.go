@@ -8,15 +8,15 @@ type Symbol struct {
 }
 
 type Deal struct {
-	ID          int
-	Type        string
-	SymbolID    int
-	SymbolPrice float64
-	Number      int
-	Amount      float64
-	Date        string
-	PortfolioID int
-	UserID      int
+	ID          int     `db:"id"`
+	Type        string  `db:"type"`
+	SymbolID    int     `db:"symbol_id"`
+	SymbolPrice float64 `db:"symbol_price"`
+	Number      int     `db:"number"`
+	Amount      float64 `db:"amount"`
+	Date        string  `db:"date"`
+	PortfolioID int     `db:"portfolio_id"`
+	UserID      int     `db:"user_id"`
 }
 
 type ActiveShare struct {

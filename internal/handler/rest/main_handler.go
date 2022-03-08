@@ -44,7 +44,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			mybank.POST("/portfolio", h.createPortfolio)
 			mybank.GET("/portfolio", h.getPortfolioList)
 			mybank.GET("/portfolio/:id", h.getPortfolio)
-
+			mybank.GET("/history", h.getHistory)
 		}
 
 		deal := api.Group("/deal", h.userIdentity)

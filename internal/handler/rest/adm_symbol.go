@@ -15,7 +15,8 @@ func (h *Handler) createSymbol(c *gin.Context) {
 	}
 	id, err := h.admSymbolService.CreateSymbol(input)
 	if err != nil {
-		newErrorResponse("Server error", http.StatusInternalServerError, errors.New("h.admSymbolService.CreateSymbol(): "+err.Error()), c)
+		newErrorResponse("Server error", http.StatusInternalServerError,
+			errors.New("h.admSymbolService.CreateSymbol(): "+err.Error()), c)
 	}
 	c.JSON(http.StatusCreated, map[string]int{
 		"id": id,
@@ -30,7 +31,8 @@ func (h *Handler) setPrice(c *gin.Context) {
 	}
 	err = h.admSymbolService.SetPrice(input)
 	if err != nil {
-		newErrorResponse("Server error", http.StatusInternalServerError, errors.New("h.admSymbolService.SetPrice(): "+err.Error()), c)
+		newErrorResponse("Server error", http.StatusInternalServerError,
+			errors.New("h.admSymbolService.SetPrice(): "+err.Error()), c)
 	}
 	c.Status(http.StatusCreated)
 }
@@ -42,6 +44,7 @@ func (h *Handler) deleteSymbol(c *gin.Context) {
 	}
 	err = h.admSymbolService.DeleteSymbol(id)
 	if err != nil {
-		newErrorResponse("Server error", http.StatusInternalServerError, errors.New("h.admSymbolService.DeleteSymbol(): "+err.Error()), c)
+		newErrorResponse("Server error", http.StatusInternalServerError,
+			errors.New("h.admSymbolService.DeleteSymbol(): "+err.Error()), c)
 	}
 }

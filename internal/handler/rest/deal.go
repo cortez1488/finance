@@ -15,7 +15,8 @@ func (h *Handler) getShareInfo(c *gin.Context) {
 
 	share, err := h.dealService.GetShareInfo(id)
 	if err != nil {
-		newErrorResponse("Server error", http.StatusInternalServerError, errors.New("h.dealService.GetShareInfo(id): "+err.Error()), c)
+		newErrorResponse("Server error", http.StatusInternalServerError,
+			errors.New("h.dealService.GetShareInfo(id): "+err.Error()), c)
 	}
 	c.JSON(http.StatusOK, share)
 }
@@ -23,7 +24,8 @@ func (h *Handler) getShareInfo(c *gin.Context) {
 func (h *Handler) getShareListInfo(c *gin.Context) {
 	shares, err := h.dealService.GetShareListInfo()
 	if err != nil {
-		newErrorResponse("Server error", http.StatusInternalServerError, errors.New("h.dealService.GetShareListInfo(): "+err.Error()), c)
+		newErrorResponse("Server error", http.StatusInternalServerError,
+			errors.New("h.dealService.GetShareListInfo(): "+err.Error()), c)
 	}
 	c.JSON(http.StatusOK, shares)
 }
@@ -38,7 +40,8 @@ func (h *Handler) buyShares(c *gin.Context) {
 	}
 	money, err := h.dealService.BuyShares(input.ShareID, input.PortfolioID, userID, input.Quantity)
 	if err != nil {
-		newErrorResponse("Server error", http.StatusInternalServerError, errors.New("h.dealService.BuyShares(): "+err.Error()), c)
+		newErrorResponse("Server error", http.StatusInternalServerError,
+			errors.New("h.dealService.BuyShares(): "+err.Error()), c)
 	}
 	c.JSON(http.StatusOK, money)
 
@@ -54,7 +57,8 @@ func (h *Handler) sellShares(c *gin.Context) {
 	}
 	money, err := h.dealService.SellShares(input.ShareID, input.PortfolioID, userID, input.Quantity)
 	if err != nil {
-		newErrorResponse("Server error", http.StatusInternalServerError, errors.New("h.dealService.SellShares(): "+err.Error()), c)
+		newErrorResponse("Server error", http.StatusInternalServerError,
+			errors.New("h.dealService.SellShares(): "+err.Error()), c)
 	}
 	c.JSON(http.StatusOK, money)
 }

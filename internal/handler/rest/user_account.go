@@ -18,7 +18,8 @@ func (h *Handler) createPortfolio(c *gin.Context) {
 
 	id, err := h.userAccountService.CreatePortfolio(int(userID), input)
 	if err != nil {
-		newErrorResponse("Server error", http.StatusInternalServerError, errors.New("h.userAccountService.CreatePortfolio(): "+err.Error()), c)
+		newErrorResponse("Server error", http.StatusInternalServerError,
+			errors.New("h.userAccountService.CreatePortfolio(): "+err.Error()), c)
 	}
 	c.JSON(http.StatusCreated, map[string]int{
 		"id": id,
@@ -29,12 +30,14 @@ func (h *Handler) getPortfolio(c *gin.Context) {
 	userID := int(getUserID(c))
 	portfolioID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		newErrorResponse("Unknown server error", http.StatusInternalServerError, errors.New("unknown parameter error "+err.Error()), c)
+		newErrorResponse("Unknown server error", http.StatusInternalServerError,
+			errors.New("unknown parameter error "+err.Error()), c)
 	}
 
 	portfolio, err := h.userAccountService.GetPortfolio(userID, portfolioID)
 	if err != nil {
-		newErrorResponse("Server error", http.StatusInternalServerError, errors.New("h.userAccountService.GetPortfolio(): "+err.Error()), c)
+		newErrorResponse("Server error", http.StatusInternalServerError,
+			errors.New("h.userAccountService.GetPortfolio(): "+err.Error()), c)
 	}
 	c.JSON(http.StatusOK, portfolio)
 }
@@ -43,8 +46,20 @@ func (h *Handler) getPortfolioList(c *gin.Context) {
 	userID := int(getUserID(c))
 	portfolio, err := h.userAccountService.GetPortfolioList(userID)
 	if err != nil {
-		newErrorResponse("Server error", http.StatusInternalServerError, errors.New("h.userAccountService.GetPortfolioList(): "+err.Error()), c)
+		newErrorResponse("Server error", http.StatusInternalServerError,
+			errors.New("h.userAccountService.GetPortfolioList(): "+err.Error()), c)
 	}
 
 	c.JSON(http.StatusOK, portfolio)
+}
+
+func (h *Handler) getHistory(c *gin.Context) {
+	userID := int(getUserID(c))
+	historyDTO, err := h.userAccountService.History(userID)
+	if err != nil {
+		newErrorResponse("Server error", http.StatusInternalServerError,
+			errors.New("h.userAccountService.History(userID): "+err.Error()), c)
+	}
+
+	c.JSON(http.StatusOK, historyDTO)
 }
