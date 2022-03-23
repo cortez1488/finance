@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
@@ -18,6 +21,8 @@ import (
 	price_refresh_storage "myFinanceTask/internal/db/price_refresh"
 	"myFinanceTask/internal/db/userAccount"
 	"myFinanceTask/internal/handler/rest"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -26,10 +31,11 @@ func init() {
 }
 
 func main() {
-
-	db := initPostgresDB()
 	rdb := initRedisDB()
+	db := initPostgresDB()
+	migrateDB(db)
 
+	log.Println("Init application logic")
 	authRepo := psqlAuth.NewAuthStorage(db)
 	authService := auth.NewAuthService(authRepo)
 
@@ -69,6 +75,9 @@ func initConfig() {
 
 	viper.SetDefault("db.redis.password", "")
 	viper.SetDefault("db.redis.db", 0)
+	viper.SetDefault("db.redis.host", "localhost")
+
+	viper.SetDefault("db.postgres.port", "5432")
 
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -77,18 +86,62 @@ func initConfig() {
 }
 
 func initPostgresDB() *sqlx.DB {
-	db, err := sqlx.Connect(viper.Get("db.postgres.drivername").(string), fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s",
-		viper.Get("db.postgres.username"), viper.Get("db.postgres.password"),
-		viper.Get("db.postgres.dbname"), viper.Get("db.postgres.sslmode")))
-	if err != nil {
-		log.Fatal(err)
+	log.Println("sql connect string:", getPostgresDBConnectString())
+	var db *sqlx.DB
+	var err error
+	var errConnectionRefusedCounter int
+
+	for {
+		db, err = sqlx.Connect(viper.Get("db.postgres.drivername").(string), getPostgresDBConnectString())
+
+		if err != nil {
+			if strings.Contains(err.Error(), "connect: connection refused") {
+				errConnectionRefusedCounter++
+				time.Sleep(time.Millisecond * 500)
+				log.Println(errConnectionRefusedCounter+1, "attempt to connect to database")
+			}
+
+			if errConnectionRefusedCounter >= 5 {
+				log.Fatal("PostgresDB initialization " + err.Error())
+			}
+		} else {
+			break
+		}
 	}
 	return db
 }
 
+func getPostgresDBConnectString() string {
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		os.Getenv("DB_HOST"), viper.Get("db.postgres.port"),
+		viper.Get("db.postgres.username"), viper.Get("db.postgres.password"),
+		viper.Get("db.postgres.dbname"), viper.Get("db.postgres.sslmode"))
+}
+
+func migrateDB(db *sqlx.DB) {
+	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		"file:./migrations/",
+		viper.GetString("dbname"), driver)
+	if err != nil {
+		log.Fatalln("Error with database migration creating:", err)
+	}
+
+	err = m.Up()
+	if err != nil {
+		if !strings.Contains(err.Error(), "no change") {
+			log.Fatalln("Error with database migration:", err)
+		}
+	}
+}
+
 func initRedisDB() *redis.Client {
 	db := redis.NewClient(&redis.Options{
-		Addr:     viper.Get("db.redis.address").(string),
+		Addr:     os.Getenv("CACHE_HOST"),
 		Password: viper.Get("db.redis.password").(string), // no password set
 		DB:       viper.Get("db.redis.db").(int),          // use default DB
 	})

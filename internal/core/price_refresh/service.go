@@ -31,6 +31,9 @@ func (s *priceRefreshService) RefreshPrices(rawData *[]rest.RefreshDBDTO) error 
 	}
 
 	resTime, err := s.repo.RefreshPrices(serviceData)
+	if err != nil {
+		return err
+	}
 	log.Println("Time fore searching existing symbols:", resTime.Sub(start))
 
 	return nil

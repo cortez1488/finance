@@ -13,9 +13,7 @@ db:
     password: "qwerty"
     dbname: "postgres"
     sslmode: "disable"
-
-  redis:
-    address: "localhost:6379"
+    port:
 
 business:
   pricesRefillTime: "3s"

@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  db:
+      restart: always
+      image: postgres:latest
+      volumes:
+        - ./.database/postgres/data:/var/lib/postgresql/data
+      ports:
+        - "5432:5432"
+      environment:
+        POSTGRES_PASSWORD: qwerty
+
+  redis:
+    restart: always
+    image: redis:latest
+    
+    volumes:
+      - cache:/data
+    ports:
+      - "6379:6379"
+
+  finance-app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      DB_HOST: db
+      CACHE_HOST: redis:6379
+
+
+
+volumes:
+  cache:
+    driver: local

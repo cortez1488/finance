@@ -34,7 +34,10 @@ func (r *priceRefreshStorage) GetCurrentSymbols() ([]string, error) {
 func (r *priceRefreshStorage) RefreshPrices(data []price_refresh.Symbol) (time.Time, error) {
 	for _, symbol := range data {
 		if symbol.Symbol != "" {
-			r.rdb.Set(context.Background(), symbol.Symbol, symbol.Price, 0)
+			res := r.rdb.Set(context.Background(), symbol.Symbol, symbol.Price, 0)
+			if res.Err() != nil {
+				return time.Now(), res.Err()
+			}
 		}
 	}
 
