@@ -8,8 +8,7 @@
 Для запуска:
 В директории проекта
 
-docker-compose build
-docker-compose up
+docker-compose build && docker-compose up
 
 
 При ошибках:
