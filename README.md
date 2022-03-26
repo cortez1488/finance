@@ -10,3 +10,8 @@
 
 docker-compose build
 docker-compose up
+
+
+При ошибках:
+ - can't stat .... Прописать sudo chown -R $USER <path-to-folder>
+ - could not open file "global/pg_filenode.map": Permission denied  .... Запусить уже построенный docker-compose еще раз
